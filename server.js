@@ -142,13 +142,7 @@ app
     const result = await Project.find({ title: project })
 
     if (result.length) {
-      let issues = []
-
-      for (const entry of result[0].issues) {
-        if (entry.issue_title) {
-          issues.push(entry)
-        }
-      }
+      let issues = aux.normalizeArray(result[0].issues)
 
       for (const item in req.query) {
         if (req.query[item] === 'true' || req.query[item] === 'false') {
@@ -159,12 +153,31 @@ app
 
       res.json(issues)
     } else {
-      res.send(`could not find project with name ${project}`)
+      res.send(`could not find project named ${project}`)
     }
   })
-  .delete(function(req, res) {
+  .delete(async function(req, res) {
     const project = req.params.project
-    res.json({ message: 'You dummy!' })
+
+    const result = await Project.find({ title: project })
+
+    if (!result.length) {
+      res.send(`could not find project named ${project}`)
+    } else if (!req.body._id) {
+      res.send('_id error')
+    } else {
+      if (aux.findIndexById(result[0].issues, req.body._id) < 0) {
+        res.send('_id error')
+      } else {
+        result[0].issues = result[0].issues.filter(value => value._id != req.body._id)
+        const data = await result[0].save()
+        if (data.title) {
+          res.send(`deleted ${req.body._id}`)
+        } else {
+          res.send(`could not delete ${req.body._id}`)
+        }
+      }
+    }
   })
 
 //404 Not Found Middleware

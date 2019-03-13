@@ -271,6 +271,20 @@ suite('Functional Tests', function() {
   })
 
   suite('GET /api/issues/{project} => Array of objects with issue data', function() {
+    test('No project with this title', function(done) {
+      const title = encodeURIComponent(projects.second.title)
+
+      chai
+        .request(server)
+        .get(`/api/issues/${title}`)
+        .query({})
+        .end(function(error, response) {
+          assert.exists(response.text)
+          assert.typeOf(response.text, 'string')
+          assert.equal(response.text, `could not find project named ${decodeURIComponent(title)}`)
+          done()
+        })
+    })
     test('No filter', function(done) {
       const title = encodeURIComponent(projects.first.title)
 
@@ -396,8 +410,23 @@ suite('Functional Tests', function() {
   })
 
   suite('DELETE /api/issues/{project} => text', function() {
+    test('No project with this title', function(done) {
+      const title = encodeURIComponent(projects.second.title)
+
+      chai
+        .request(server)
+        .delete(`/api/issues/${title}`)
+        .send({ title })
+        .end(function(error, response) {
+          assert.exists(response.text)
+          assert.typeOf(response.text, 'string')
+          assert.equal(response.text, `could not find project named ${decodeURIComponent(title)}`)
+          done()
+        })
+    })
+
     test('No _id', function(done) {
-      const title = projects.first.title
+      const title = encodeURIComponent(projects.first.title)
 
       chai
         .request(server)
@@ -412,8 +441,8 @@ suite('Functional Tests', function() {
     })
 
     test('Invalid _id', function(done) {
-      const title = projects.first.title
-      const testId = '4a502846d070e2088b7025abe80629830bf03d7ab5624d5e91f332bc9d049d3f'
+      const title = encodeURIComponent(projects.first.title)
+      const testId = '5c8851572b00b54f7ce65187'
 
       chai
         .request(server)
@@ -426,8 +455,9 @@ suite('Functional Tests', function() {
           done()
         })
     })
+
     test('Valid _id, issue #1', function(done) {
-      const title = projects.first.title
+      const title = encodeURIComponent(projects.first.title)
       const testId = projects.first.issues.first._id
 
       chai
@@ -443,7 +473,7 @@ suite('Functional Tests', function() {
     })
 
     test('Valid _id, issue #2', function(done) {
-      const title = projects.first.title
+      const title = encodeURIComponent(projects.first.title)
       const testId = projects.first.issues.second._id
 
       chai
@@ -459,7 +489,7 @@ suite('Functional Tests', function() {
     })
 
     test('Valid _id, issue #3', function(done) {
-      const title = projects.first.title
+      const title = encodeURIComponent(projects.first.title)
       const testId = projects.first.issues.third._id
 
       chai
